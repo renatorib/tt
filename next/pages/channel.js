@@ -2,7 +2,7 @@
  * This is the page rendered when inside a chat room.
  */
 
-import React from 'react'
+import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Link from 'next/link'
@@ -59,6 +59,19 @@ const StyledMessageWrapper = styled(Box)`
   flex-shrink: 0;
 `
 
+const StyledNewMessages = styled(Box)`
+  bottom: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+  padding: 3px;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`
+
 const LoadingComponent = () => (
   <Box full='vertical' justify='center' align='center'>
     <HashLoader color='#e02438' loading />
@@ -70,6 +83,95 @@ import ChannelsContainer from 'app/modules/channel/containers/ChannelsContainer'
 import MessagesContainer from 'app/modules/channel/containers/MessagesContainer'
 import NewMessageContainer from 'app/modules/channel/containers/NewMessageContainer'
 import NewChannelContainer from 'app/modules/channel/containers/NewChannelContainer'
+
+class MessagesBox extends Component {
+  static propTypes = {
+    user: PropTypes.object.isRequired,
+    messages: PropTypes.arrayOf(PropTypes.object).isRequired,
+    loading: PropTypes.bool.isRequired,
+  }
+
+  state = {
+    newMessages: false,
+    bottomGrabbed: true
+  }
+
+  messageBox = React.createRef()
+
+  messageBoxScrollToBottom = () => {
+    const $messageBox = this.messageBox.current.boxContainerRef
+    $messageBox.scrollTop = $messageBox.scrollHeight - $messageBox.clientHeight
+  }
+
+  handleMessageBoxScroll = (event) => {
+    const $messageBox = event.currentTarget
+    if ($messageBox.scrollTop === $messageBox.scrollHeight - $messageBox.clientHeight) {
+      this.setState({ newMessages: false, bottomGrabbed: true })
+    }
+    else if (this.state.bottomGrabbed) {
+      this.setState({ bottomGrabbed: false })
+    }
+  }
+
+  componentDidUpdate (prevProps) {
+    if (prevProps.loading && !this.props.loading) {
+      this.messageBoxScrollToBottom()
+      return
+    }
+
+    const prevLastMessage = prevProps.messages[prevProps.messages.length - 1]
+    const lastMessage = this.props.messages[this.props.messages.length - 1]
+
+    if (!lastMessage) return
+
+    if ((!prevLastMessage && lastMessage) || (prevLastMessage.id !== lastMessage.id)) {
+      if (lastMessage.author === this.props.user.name) {
+        this.messageBoxScrollToBottom()
+      }
+      else {
+        if (this.state.bottomGrabbed) {
+          this.messageBoxScrollToBottom()
+        }
+        else {
+          this.setState({ newMessages: true }) //eslint-disable-line
+        }
+      }
+    }
+  }
+
+  componentDidMount () {
+    this.messageBoxScrollToBottom()
+  }
+
+  render () {
+    const { loading, messages } = this.props
+    const { newMessages } = this.state
+
+    return (
+      <Fragment>
+        <ScrollableBox innerRef={ this.messageBox } onScroll={ this.handleMessageBoxScroll }>
+          <Box pad='medium'>
+            { loading ? 'Loading...' : (
+              messages.length === 0 ? 'No one talking here yet :(' : (
+                messages.map(({ id, author, message }) => (
+                  <StyledMessageWrapper key={ id } pad='small' credit={ author }>
+                    <StyledAuthor>{ author }</StyledAuthor>
+                    <StyledMessage>{ message }</StyledMessage>
+                  </StyledMessageWrapper>
+                ))
+              )
+            ) }
+          </Box>
+        </ScrollableBox>
+        { newMessages && (
+          <StyledNewMessages onClick={ this.messageBoxScrollToBottom }>
+            New messages 🡓
+          </StyledNewMessages>
+        ) }
+      </Fragment>
+    )
+  }
+}
 
 const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
   <CurrentUserContainer>
@@ -129,20 +231,11 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                           <Button icon={ <RefreshIcon /> } onClick={ () => refetch() } />
                         </StyledRoomHeader>
 
-                        <ScrollableBox>
-                          <Box pad='medium'>
-                            { loading ? 'Loading...' : (
-                              messages.length === 0 ? 'No one talking here yet :(' : (
-                                messages.map(({ id, author, message }) => (
-                                  <StyledMessageWrapper key={ id } pad='small' credit={ author }>
-                                    <StyledAuthor>{ author }</StyledAuthor>
-                                    <StyledMessage>{ message }</StyledMessage>
-                                  </StyledMessageWrapper>
-                                ))
-                              )
-                            ) }
-                          </Box>
-                        </ScrollableBox>
+                        <MessagesBox
+                          user={ user }
+                          messages={ messages }
+                          loading={ loading }
+                        />
 
                         <Box pad='medium' direction='column'>
                           { user && user.uid ? (
