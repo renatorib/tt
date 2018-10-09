@@ -25,6 +25,7 @@ import Anchor from 'grommet/components/Anchor'
 import Button from 'grommet/components/Button'
 import Paragraph from 'grommet/components/Paragraph'
 import Label from 'grommet/components/Label'
+import Image from 'grommet/components/Image'
 
 import bootstrap from 'app/lib/bootstrap'
 import TextInput from 'app/modules/form/components/TextInput'
@@ -33,12 +34,20 @@ const StyledRoomHeader = styled(Header)`
   border-bottom: 1px solid #ddd;
 `
 
+const StyledMessageBox = styled(Box)`
+  padding-left: 10px;
+`
+
 const StyledMessage = styled(Paragraph)`
   margin: 0;
 `
 
 const StyledAuthor = styled(Label)`
   margin: 0;
+`
+
+const StyledProfileThumb = styled(Image)`
+  border-radius: 50% 50%;
 `
 
 const StyledTextInput = styled(TextInput)`
@@ -53,6 +62,13 @@ const LoadingComponent = () => (
   <Box full='vertical' justify='center' align='center'>
     <HashLoader color='#e02438' loading />
   </Box>
+)
+
+import md5 from 'md5'
+import memoize from 'fast-memoize'
+
+const gravatar = memoize(
+  email => `https://www.gravatar.com/avatar/${md5(email.trim().toLowerCase())}?d=robohash`
 )
 
 import CurrentUserContainer from 'app/modules/auth/containers/CurrentUserContainer'
@@ -123,9 +139,15 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                           { loading ? 'Loading...' : (
                             messages.length === 0 ? 'No one talking here yet :(' : (
                               messages.map(({ id, author, message }) => (
-                                <Box key={ id } pad='small' credit={ author }>
-                                  <StyledAuthor>{ author }</StyledAuthor>
-                                  <StyledMessage>{ message }</StyledMessage>
+                                <Box key={ id } pad='small' credit={ author } flex direction='row'>
+                                  <StyledProfileThumb
+                                    src={ gravatar(author.mail) }
+                                    size='thumb'
+                                  />
+                                  <StyledMessageBox>
+                                    <StyledAuthor>{ author.name }</StyledAuthor>
+                                    <StyledMessage>{ message }</StyledMessage>
+                                  </StyledMessageBox>
                                 </Box>
                               ))
                             )
