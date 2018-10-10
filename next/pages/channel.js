@@ -55,6 +55,7 @@ const LoadingComponent = () => (
   </Box>
 )
 
+import SignoutContainer from 'app/modules/auth/containers/SignoutContainer'
 import CurrentUserContainer from 'app/modules/auth/containers/CurrentUserContainer'
 import ChannelsContainer from 'app/modules/channel/containers/ChannelsContainer'
 import MessagesContainer from 'app/modules/channel/containers/MessagesContainer'
@@ -101,7 +102,14 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
 
                   <Footer pad='medium'>
                     <Button icon={ <UserIcon /> } onClick={ console.log } />
-                    <Button icon={ <LogoutIcon /> } onClick={ console.log } />
+                    <SignoutContainer>
+                      {({ logout, loading }) => (
+                        <div>
+                          <Button icon={ <LogoutIcon /> } onClick={ loading ? undefined : () => logout() } />{' '}
+                          {loading && <span>Logging out...</span>}
+                        </div>
+                      )}
+                    </SignoutContainer>
                   </Footer>
                 </Sidebar>
 
