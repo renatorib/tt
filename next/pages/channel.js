@@ -14,7 +14,6 @@ import RefreshIcon from 'grommet/components/icons/base/Refresh'
 import AddCircleIcon from 'grommet/components/icons/base/Add'
 import UserIcon from 'grommet/components/icons/base/User'
 import LogoutIcon from 'grommet/components/icons/base/Logout'
-import Spinning from 'grommet/components/icons/Spinning';
 import Split from 'grommet/components/Split'
 import Sidebar from 'grommet/components/Sidebar'
 import Header from 'grommet/components/Header'
