@@ -14,6 +14,7 @@ import RefreshIcon from 'grommet/components/icons/base/Refresh'
 import AddCircleIcon from 'grommet/components/icons/base/Add'
 import UserIcon from 'grommet/components/icons/base/User'
 import LogoutIcon from 'grommet/components/icons/base/Logout'
+import Spinning from 'grommet/components/icons/Spinning';
 import Split from 'grommet/components/Split'
 import Sidebar from 'grommet/components/Sidebar'
 import Header from 'grommet/components/Header'
@@ -103,8 +104,11 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                   <Footer pad='medium'>
                     <Button icon={ <UserIcon /> } onClick={ console.log } />
                     <SignoutContainer>
-                      {logout => (
-                        <Button icon={ <LogoutIcon /> } onClick={ () => logout() } />
+                      {({ logout, loading }) => (
+                        <div>
+                          <Button icon={ <LogoutIcon /> } onClick={ loading ? undefined : () => logout() } />{' '}
+                          {loading && <span>Logging out...</span>}
+                        </div>
                       )}
                     </SignoutContainer>
                   </Footer>
