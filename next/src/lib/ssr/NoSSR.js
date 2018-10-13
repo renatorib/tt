@@ -22,17 +22,13 @@ class NoSSR extends Component {
   render () {
     return this.state.client
       ? this.props.children()
-      : this.props.fallback
+      : this.props.fallback || null
   }
 }
 
 NoSSR.propTypes = {
   children: PropTypes.func,
   fallback: PropTypes.any
-}
-
-NoSSR.defaultProps = {
-  fallback: null
 }
 
 export default NoSSR
