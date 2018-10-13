@@ -1,9 +1,10 @@
 import React from 'react'
-import { func } from 'prop-types'
+import PropTypes from 'prop-types'
 import gql from 'graphql-tag'
 import { Query } from 'react-apollo'
+import Router from 'next/router'
 
-import { isClient } from 'app/lib/func'
+import NoSSR from 'app/lib/ssr/NoSSR'
 
 const query = gql`
   query CurrentUser {
@@ -15,26 +16,45 @@ const query = gql`
   }
 `
 
-let refetchedOnClient = false
-
 const CurrentUserContainer = ({ children }) => (
-  <Query query={ query }>
-    { ({ ...result, loading, refetch, data }) => {
-      // Force a refetch on the client inside to make sure
-      // the cached SSR anonymous user is replaced, in case
-      // the user is already logged in..
-      if (!loading && !refetchedOnClient && isClient()) {
-        refetchedOnClient = true
-        refetch()
-      }
-
-      return children({ ...result, user: data.user })
-    } }
+  <Query query={ query } ssr={ false }>
+    {children}
   </Query>
 )
 
 CurrentUserContainer.propTypes = {
-  children: func,
+  children: PropTypes.func,
+}
+
+const isLoggedIn = (user) => user && user.uid
+
+CurrentUserContainer.Auth = ({ children, fallback = null, redirect = '/' }) => (
+  <NoSSR fallback={ fallback }>
+    {() => (
+      <CurrentUserContainer>
+        {userData => {
+          const { networkStatus, data: { user } } = userData
+
+          if (networkStatus === 1) {
+            return fallback
+          }
+
+          if (networkStatus === 7 && !isLoggedIn(user)) {
+            Router.replace(redirect)
+            return fallback
+          }
+
+          return children(userData)
+        }}
+      </CurrentUserContainer>
+    )}
+  </NoSSR>
+)
+
+CurrentUserContainer.Auth.propTypes = {
+  children: PropTypes.func,
+  fallback: PropTypes.any,
+  redirect: PropTypes.string,
 }
 
 export default CurrentUserContainer

@@ -62,8 +62,8 @@ import NewMessageContainer from 'app/modules/channel/containers/NewMessageContai
 import NewChannelContainer from 'app/modules/channel/containers/NewChannelContainer'
 
 const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
-  <CurrentUserContainer>
-    { ({ user }) => (
+  <CurrentUserContainer.Auth fallback={ <LoadingComponent /> }>
+    { ({ data: { user } }) => (
       <ChannelsContainer>
         { ({ loading, channels }) => (
           (loading && !channels.length) ? <LoadingComponent /> : (
@@ -162,7 +162,7 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
         ) }
       </ChannelsContainer>
     ) }
-  </CurrentUserContainer>
+  </CurrentUserContainer.Auth>
 )
 
 ChatRoom.propTypes = {
