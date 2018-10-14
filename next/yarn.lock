@@ -5458,6 +5458,10 @@ react-desc@^1.0.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/react-desc/-/react-desc-1.4.1.tgz#99beddf7be2575902d159e919408d118823cc78b"
 
+react-detect-offline@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/react-detect-offline/-/react-detect-offline-2.1.2.tgz#1827b1db88c8ae40ca70dfd995dfb0aff702126b"
+
 react-dom@^16.2.0:
   version "16.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.2.0.tgz#69003178601c0ca19b709b33a83369fe6124c044"
