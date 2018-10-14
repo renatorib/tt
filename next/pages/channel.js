@@ -64,6 +64,10 @@ import NewMessageContainer from 'app/modules/channel/containers/NewMessageContai
 import NewChannelContainer from 'app/modules/channel/containers/NewChannelContainer'
 import UsersMentionContainer from 'app/modules/channel/containers/UsersMentionContainer'
 
+const MENTION_PATTERN = '@[__display__](__id__)'
+const MENTION_MATCH = /(@\[\w+\]\(\d+\))/i
+const MENTION_GROUPS = /@\[(\w+)\]\((\d+)\)/i
+
 const MentionInputComponent = ({ ...props }) => (
   <UsersMentionContainer.Fetch>
     {fetchUsers => {
@@ -79,7 +83,7 @@ const MentionInputComponent = ({ ...props }) => (
         <StyledMentionInput
           { ...props }
           displayTransform={ (_, name) => `@${name}` }
-          markup='@[__display__](__id__)'
+          markup={ MENTION_PATTERN }
           singleLine
         >
           <Mention
@@ -110,7 +114,29 @@ const MessageForm = ({ user, channel }) => user && user.uid ? (
 
 MessageForm.propTypes = {
   user: PropTypes.object,
-  channel: PropTypes.string
+  channel: PropTypes.object
+}
+
+const MessageWithMention = ({ children }) => {
+  const message = children
+    .split(MENTION_MATCH)
+    .map((piece, key) => {
+      const [mention, name, uid] = MENTION_GROUPS.exec(piece) || []
+
+      if (mention) {
+        return <a key={ key } href={ `#user-${uid}` }>@{name}</a>
+      }
+
+      return <span key={ key }>{piece}</span>
+    })
+
+  return (
+    <StyledMessage>{ message }</StyledMessage>
+  )
+}
+
+MessageWithMention.propTypes = {
+  children: PropTypes.string
 }
 
 const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
@@ -177,7 +203,7 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                               messages.map(({ id, author, message }) => (
                                 <Box key={ id } pad='small' credit={ author }>
                                   <StyledAuthor>{ author }</StyledAuthor>
-                                  <StyledMessage>{ message }</StyledMessage>
+                                  <MessageWithMention>{ message }</MessageWithMention>
                                 </Box>
                               ))
                             )
