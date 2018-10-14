@@ -1,6 +1,5 @@
-import { compose, defaultProps } from 'recompose'
+import { defaultProps } from 'recompose'
 import { MentionsInput } from 'react-mentions'
-import { connectField } from '../lib/utils'
 
 const mentionInputStyles = {
   control: {
@@ -55,7 +54,4 @@ const mentionInputStyles = {
   },
 }
 
-export default compose(
-  connectField,
-  defaultProps({ style: mentionInputStyles })
-)(MentionsInput)
+export default defaultProps({ style: mentionInputStyles })(MentionsInput)
