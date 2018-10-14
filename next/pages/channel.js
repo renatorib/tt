@@ -23,17 +23,17 @@ import Box from 'grommet/components/Box'
 import Menu from 'grommet/components/Menu'
 import Anchor from 'grommet/components/Anchor'
 import Button from 'grommet/components/Button'
-import Paragraph from 'grommet/components/Paragraph'
 import Label from 'grommet/components/Label'
 
 import bootstrap from 'app/lib/bootstrap'
-import TextInput from 'app/modules/form/components/TextInput'
+import MentionField from 'app/modules/mention/components/MentionField'
+import MessageWithMentions from 'app/modules/mention/components/MessageWithMentions'
 
 const StyledRoomHeader = styled(Header)`
   border-bottom: 1px solid #ddd;
 `
 
-const StyledMessage = styled(Paragraph)`
+const StyledMessageWithMentions = styled(MessageWithMentions)`
   margin: 0;
 `
 
@@ -41,7 +41,7 @@ const StyledAuthor = styled(Label)`
   margin: 0;
 `
 
-const StyledTextInput = styled(TextInput)`
+const StyledMentionField = styled(MentionField)`
   width: 100%;
 `
 
@@ -125,7 +125,9 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                               messages.map(({ id, author, message }) => (
                                 <Box key={ id } pad='small' credit={ author }>
                                   <StyledAuthor>{ author }</StyledAuthor>
-                                  <StyledMessage>{ message }</StyledMessage>
+                                  <StyledMessageWithMentions>
+                                    { message }
+                                  </StyledMessageWithMentions>
                                 </Box>
                               ))
                             )
@@ -141,8 +143,8 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                               { ({ handleSubmit }) => (
                                 <form onSubmit={ handleSubmit }>
                                   <NewMessageContainer.Message
-                                    placeHolder='Message #general'
-                                    component={ StyledTextInput }
+                                    placeholder='Message #general'
+                                    component={ StyledMentionField }
                                   />
                                 </form>
                               ) }
