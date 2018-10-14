@@ -6,6 +6,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Link from 'next/link'
+import { Mention } from 'react-mentions'
 
 import { HashLoader } from 'react-spinners'
 import App from 'grommet/components/App'
@@ -27,7 +28,7 @@ import Paragraph from 'grommet/components/Paragraph'
 import Label from 'grommet/components/Label'
 
 import bootstrap from 'app/lib/bootstrap'
-import TextInput from 'app/modules/form/components/TextInput'
+import MentionInput from 'app/modules/form/components/MentionInput'
 
 const StyledRoomHeader = styled(Header)`
   border-bottom: 1px solid #ddd;
@@ -41,8 +42,9 @@ const StyledAuthor = styled(Label)`
   margin: 0;
 `
 
-const StyledTextInput = styled(TextInput)`
+const StyledMentionInput = styled(MentionInput)`
   width: 100%;
+  height: auto;
 `
 
 const AddChannelButton = styled(Button)`
@@ -60,6 +62,56 @@ import ChannelsContainer from 'app/modules/channel/containers/ChannelsContainer'
 import MessagesContainer from 'app/modules/channel/containers/MessagesContainer'
 import NewMessageContainer from 'app/modules/channel/containers/NewMessageContainer'
 import NewChannelContainer from 'app/modules/channel/containers/NewChannelContainer'
+import UsersMentionContainer from 'app/modules/channel/containers/UsersMentionContainer'
+
+const MentionInputComponent = ({ ...props }) => (
+  <UsersMentionContainer.Fetch>
+    {fetchUsers => {
+      const transform = ({ data }) =>
+        data.users.entities
+          .map(user => user ? ({ display: user.name, id: user.uid }) : false)
+          .filter(Boolean)
+
+      const data = (query, cb) =>
+        fetchUsers(query).then(transform).then(cb)
+
+      return (
+        <StyledMentionInput
+          { ...props }
+          displayTransform={ (_, name) => `@${name}` }
+          markup='@[__display__](__id__)'
+          singleLine
+        >
+          <Mention
+            trigger='@'
+            data={ data }
+            style={ { backgroundColor: '#d3e5f3' } }
+          />
+        </StyledMentionInput>
+      )
+    }}
+  </UsersMentionContainer.Fetch>
+)
+
+const MessageForm = ({ user, channel }) => user && user.uid ? (
+  <NewMessageContainer user={ user } channel={ channel }>
+    { ({ handleSubmit }) => (
+      <form onSubmit={ handleSubmit }>
+        <NewMessageContainer.Message
+          placeholder='Message #general'
+          component={ MentionInputComponent }
+        />
+      </form>
+    ) }
+  </NewMessageContainer>
+) : (
+  <span>Log in to post messages</span>
+)
+
+MessageForm.propTypes = {
+  user: PropTypes.object,
+  channel: PropTypes.string
+}
 
 const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
   <CurrentUserContainer>
@@ -133,23 +185,10 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                         </Box>
 
                         <Box pad='medium' direction='column'>
-                          { user && user.uid ? (
-                            <NewMessageContainer
-                              user={ user }
-                              channel={ channels.find(({ name }) => name === channel) }
-                            >
-                              { ({ handleSubmit }) => (
-                                <form onSubmit={ handleSubmit }>
-                                  <NewMessageContainer.Message
-                                    placeHolder='Message #general'
-                                    component={ StyledTextInput }
-                                  />
-                                </form>
-                              ) }
-                            </NewMessageContainer>
-                          ) : (
-                            'Log in to post messages'
-                          ) }
+                          <MessageForm
+                            channel={ channels.find(({ name }) => name === channel) }
+                            user={ user }
+                          />
                         </Box>
                       </Box>
                     ) }
