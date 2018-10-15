@@ -2,7 +2,7 @@
  * This is the page rendered when inside a chat room.
  */
 
-import React from 'react'
+import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Link from 'next/link'
@@ -26,6 +26,8 @@ import Button from 'grommet/components/Button'
 import Paragraph from 'grommet/components/Paragraph'
 import Label from 'grommet/components/Label'
 
+import { Detector } from 'app/lib/network/detector'
+import { Notifier } from 'app/lib/network/notifier'
 import bootstrap from 'app/lib/bootstrap'
 import TextInput from 'app/modules/form/components/TextInput'
 
@@ -43,10 +45,24 @@ const StyledAuthor = styled(Label)`
 
 const StyledTextInput = styled(TextInput)`
   width: 100%;
+  &:disabled {
+    background: #eee;
+  }
 `
 
 const AddChannelButton = styled(Button)`
   margin-left: auto;
+`
+
+const StyledOfflineLabel = styled(Label)`
+  background: #ff324d;
+  color: white;
+  fill: white;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-bottom: 5px;
+  border-radius: 3px;
 `
 
 const LoadingComponent = () => (
@@ -77,12 +93,17 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
 
                     <NewChannelContainer channels={ channels }>
                       { create => (
-                        <AddChannelButton
-                          icon={ <AddCircleIcon /> }
-                          onClick={ () => create(
-                            window.prompt('Name your new channel')
+                        <Detector>
+                          { online => (
+                            <AddChannelButton
+                              icon={ <AddCircleIcon /> }
+                              onClick={ () => {
+                                !online && window.alert('Check your network connection')
+                                online && create(window.prompt('Name your new channel'))
+                              } }
+                            />
                           ) }
-                        />
+                        </Detector>
                       ) }
                     </NewChannelContainer>
                   </Header>
@@ -134,23 +155,36 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
 
                         <Box pad='medium' direction='column'>
                           { user && user.uid ? (
-                            <NewMessageContainer
-                              user={ user }
-                              channel={ channels.find(({ name }) => name === channel) }
-                            >
-                              { ({ handleSubmit }) => (
-                                <form onSubmit={ handleSubmit }>
-                                  <NewMessageContainer.Message
-                                    placeHolder='Message #general'
-                                    component={ StyledTextInput }
-                                  />
-                                </form>
+                            <Detector>
+                              { online => (
+                                <Fragment>
+                                  {!online && (
+                                    <StyledOfflineLabel>
+                                      Please check your network connection.
+                                    </StyledOfflineLabel>
+                                  )}
+                                  <NewMessageContainer
+                                    user={ user }
+                                    channel={ channels.find(({ name }) => name === channel) }
+                                  >
+                                    { ({ handleSubmit }) => (
+                                      <form onSubmit={ handleSubmit }>
+                                        <NewMessageContainer.Message
+                                          disabled={ !online }
+                                          placeHolder='Message #general'
+                                          component={ StyledTextInput }
+                                        />
+                                      </form>
+                                    ) }
+                                  </NewMessageContainer>
+                                </Fragment>
                               ) }
-                            </NewMessageContainer>
+                            </Detector>
                           ) : (
                             'Log in to post messages'
                           ) }
                         </Box>
+
                       </Box>
                     ) }
                   </MessagesContainer>
@@ -169,4 +203,9 @@ ChatRoom.propTypes = {
   url: PropTypes.object.isRequired,
 }
 
-export default bootstrap(ChatRoom)
+export default bootstrap(props => (
+  <Fragment>
+    <Notifier />
+    <ChatRoom { ...props } />
+  </Fragment>
+))
