@@ -27,6 +27,7 @@ import Paragraph from 'grommet/components/Paragraph'
 import Label from 'grommet/components/Label'
 
 import { Detector } from 'app/lib/network/detector'
+import { Notifier } from 'app/lib/network/notifier'
 import bootstrap from 'app/lib/bootstrap'
 import TextInput from 'app/modules/form/components/TextInput'
 
@@ -93,7 +94,7 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                     <NewChannelContainer channels={ channels }>
                       { create => (
                         <Detector>
-                          { ({ online }) => (
+                          { online => (
                             <AddChannelButton
                               icon={ <AddCircleIcon /> }
                               onClick={ () => {
@@ -155,7 +156,7 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                         <Box pad='medium' direction='column'>
                           { user && user.uid ? (
                             <Detector>
-                              {({ online }) => (
+                              { online => (
                                 <Fragment>
                                   {!online && (
                                     <StyledOfflineLabel>
@@ -177,7 +178,7 @@ const ChatRoom = ({ url, url: { query: { channel = 'general' } } }) => (
                                     ) }
                                   </NewMessageContainer>
                                 </Fragment>
-                              )}
+                              ) }
                             </Detector>
                           ) : (
                             'Log in to post messages'
@@ -202,4 +203,9 @@ ChatRoom.propTypes = {
   url: PropTypes.object.isRequired,
 }
 
-export default bootstrap(ChatRoom)
+export default bootstrap(props => (
+  <Fragment>
+    <Notifier />
+    <ChatRoom { ...props } />
+  </Fragment>
+))

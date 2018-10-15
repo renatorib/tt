@@ -9,6 +9,7 @@ import Head from 'next/head'
 import initApollo, { introspect } from './initApollo'
 
 import { IgnoreStyleSheets } from '../containers/IgnoreStyleSheets'
+import { DetectorProvider } from './network/detector'
 
 export default ComposedComponent => class WithData extends React.Component {
   static displayName = `WithData(${getDisplayName(ComposedComponent)})`
@@ -121,7 +122,9 @@ export default ComposedComponent => class WithData extends React.Component {
 
     return (
       <ApolloProvider client={ this.apollo }>
-        <ComposedComponent { ...props } />
+        <DetectorProvider>
+          <ComposedComponent { ...props } />
+        </DetectorProvider>
       </ApolloProvider>
     )
   }
