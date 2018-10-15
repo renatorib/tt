@@ -1,22 +1,22 @@
 import React from 'react'
 import { pipe } from 'ramda'
 import { Listener } from './detector'
-import { createModal } from '../createModal'
+import { createModal } from '../modal/create'
 
 import Toast from 'grommet/components/Toast'
 
-const status = {
-  online: {
+const ONLINE = {
+  [true]: {
     status: 'ok',
     message: 'Your network connection was successfully recovered',
   },
-  offline: {
+  [false]: {
     status: 'critical',
     message: 'We lost your connection. Please check your network.'
   }
 }
 
-const getProps = online => online ? status.online : status.offline
+const getProps = online => ONLINE[online]
 
 const networkNotify = createModal((props, modal) => (
   <Toast onClose={ modal.unmount } size='small' status={ props.status }>
@@ -25,8 +25,5 @@ const networkNotify = createModal((props, modal) => (
 ))
 
 export const Notifier = () => (
-  <Listener onChange={ online => {
-    console.log('Listener onChange', { online })
-    pipe(getProps, networkNotify.open)(online)
-  } } />
+  <Listener onChange={ pipe(getProps, networkNotify.open) } />
 )

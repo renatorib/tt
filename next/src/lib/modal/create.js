@@ -21,7 +21,7 @@ const canUseDom = () =>
  * Draft: https://codesandbox.io/s/480ply31wx
  */
 
-const createBullet = (
+export const createBullet = (
   render,
   {
     getContainer = () => document.body,
