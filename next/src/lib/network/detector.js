@@ -55,29 +55,35 @@ export class DetectorProvider extends Component {
   }
 }
 
-export class Listener extends Component {
-  static propTypes = { onChange: PropTypes.func }
+class ListenerHandler extends Component {
+  static propTypes = {
+    online: PropTypes.bool,
+    onChange: PropTypes.func
+  }
 
-  online = isOnline()
+  componentDidUpdate (prevProps) {
+    const { online, onChange } = this.props
+
+    if (prevProps.online !== online) {
+      onChange && onChange(online)
+    }
+  }
 
   render () {
-    return (
-      <Detector>
-        { online => {
-          if (this.online !== online) {
-            this.online = online
-            this.props.onChange && this.props.onChange(online)
-          }
-
-          return null
-        } }
-      </Detector>
-    )
+    return null
   }
 }
 
+export const Listener = (props) => (
+  <Detector>
+    { online => <ListenerHandler online={ online } { ...props } /> }
+  </Detector>
+)
+
 export const Online = ({ children }) => (
-  <Detector>{online => online ? children : null}</Detector>
+  <Detector>
+    {online => online ? children : null}
+  </Detector>
 )
 
 Online.propTypes = {
@@ -85,7 +91,9 @@ Online.propTypes = {
 }
 
 export const Offline = ({ children }) => (
-  <Detector>{online => online ? null : children}</Detector>
+  <Detector>
+    {online => online ? null : children}
+  </Detector>
 )
 
 Offline.propTypes = {
